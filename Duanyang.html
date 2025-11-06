@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive CV: Duanyang Wang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Calm Harmony (Stone, Teal, White) -->
+    <!-- Application Structure Plan: A dashboard-style SPA with four main interactive tabs: 'Overview' (for key KPIs), 'Career Journey' (for role-specific details), 'Skills Deep Dive' (connecting skills to projects), and 'Education' (for academic charts). This structure is chosen over a linear CV to allow non-linear, task-oriented exploration (e.g., a recruiter can jump straight to 'Skills' and see tangible proof), making the profile more engaging and easier to digest. -->
+    <!-- Visualization & Content Choices: 
+        - Overview: Key metrics (6+ Yrs, 2 Markets) presented as 'Dynamic Stats' (HTML/CSS) for immediate impact (Goal: Inform).
+        - Career Journey: A tabbed content switcher (HTML/CSS/JS) to detail each of the 3 JD.com roles. (Goal: Organize, Inform). Interaction: Click role to show details.
+        - Skills Deep Dive: An interactive 2-column layout. Buttons for skills, content pane for proof-of-work. (Goal: Relate skills to experience). Interaction: Click skill to update context.
+        - Education: A Bar Chart (Chart.js/Canvas) for MSc grades to visually compare performance. (Goal: Compare, Inform). Interaction: Hover for tooltips.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f7; /* Warm Neutral Background */
+            color: #3d3d3d;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #575757;
+        }
+        .nav-item:hover {
+            background-color: #e7e5e4; /* stone-200 */
+        }
+        .nav-item.active {
+            background-color: #0d9488; /* teal-600 */
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2), 0 2px 4px -1px rgba(13, 148, 136, 0.1);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        .kpi-card {
+            background-color: #f5f5f4; /* stone-100 */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .skill-button {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid #d6d3d1; /* stone-300 */
+            color: #3d3d3d;
+        }
+        .skill-button:hover {
+            background-color: #e7e5e4; /* stone-200 */
+        }
+        .skill-button.active {
+            background-color: #0d9488; /* teal-600 */
+            color: #ffffff;
+            border-color: #0d9488;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #0d9488; /* teal-600 */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="card mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-4xl font-bold text-teal-700">Duanyang Wang</h1>
+                    <p class="text-xl mt-2 font-medium text-stone-600">MSc Data Science Candidate | 6 Years in Data Analytics & E-commerce Growth</p>
+                </div>
+                <div class="text-sm text-stone-600 mt-4 md:mt-0 md:text-right">
+                    <p>remi.wang96@gmail.com</p>
+                    <p>+310653912302</p>
+                    <!-- UPDATED: Added <a> tag for clickable LinkedIn link -->
+                    <p><a href="https://www.linkedin.com/in/remiwang/" target="_blank" class="text-teal-600 hover:underline">linkedin.com/in/remiwang</a></p>
+                </div>
+            </div>
+            <p class="mt-4 text-stone-700">
+                Data-focused professional with 6 years of experience in e-commerce analytics, operations, 
+                and marketing at JD.com. Skilled in Python, SQL, data visualization, 
+                and cross-border platform management (TikTok, Shopee, Lazada). 
+                Strong record of driving data-informed growth and managing international projects in China, Thailand, and the Netherlands. 
+                Currently pursuing an MSc in Data Science at Utrecht University.
+            </p>
+        </header>
+
+        <!-- Main Content: Navigation + Content Area -->
+        <div class="flex flex-col md:flex-row md:space-x-8">
+            
+            <!-- Navigation -->
+            <nav class="md:w-1/4 flex-shrink-0">
+                <ul class="flex md:flex-col overflow-x-auto md:overflow-x-visible space-x-2 md:space-x-0 md:space-y-2 card p-4">
+                    <li class="nav-item active" data-tab="overview">Overview</li>
+                    <li class="nav-item" data-tab="journey">Career Journey</li>
+                    <li class="nav-item" data-tab="skills">Skills Deep Dive</li>
+                    <li class="nav-item" data-tab="education">Education</li>
+                </ul>
+            </nav>
+
+            <!-- Content Area -->
+            <main class="md:w-3/4 mt-8 md:mt-0">
+                
+                <!-- Overview Tab -->
+                <section id="overview-content" class="tab-content active card">
+                    <h2 class="text-2xl font-bold mb-4">Key Performance Indicators</h2>
+                    <p class="text-stone-600 mb-6">
+                        This section highlights the top-level quantitative and qualitative outcomes from my 6 years at JD.com.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">6 Years</h3>
+                            <p class="text-stone-600">at JD.com</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">3 Markets</h3>
+                            <p class="text-stone-600">CN, Pioneered (NL & TH)</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">100M+ Rows</h3>
+                            <p class="text-stone-600">Processed with Hive</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">50M Sales</h3>
+                            <p class="text-stone-600">Generated (ROI 141)</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">1st Place</h3>
+                            <p class="text-stone-600">TikTok Live Sale (TH)</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="text-3xl font-bold text-teal-600">5-Member</h3>
+                            <p class="text-stone-600">Team Lead</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Career Journey Tab -->
+                <section id="journey-content" class="tab-content card">
+                    <h2 class="text-2xl font-bold mb-4">Career Journey at JD.com</h2>
+                    <p class="text-stone-600 mb-6">
+                        An interactive timeline of my roles, showing a progression from pure analysis to data-driven growth management and international market leadership.
+                    </p>
+                    <div id="career-tabs" class="border-t">
+                        <!-- Role 1 -->
+                        <div class="role-tab" data-role="manager">
+                            <h3 class="text-xl font-bold p-4 cursor-pointer hover:bg-stone-50">Data Operations & Growth Manager (Ochama)</h3>
+                            <div class="role-details hidden pl-8 pb-4 border-l-2 border-stone-200">
+                                <p class="text-sm font-medium text-stone-500 mb-2">Dec 2022 – Apr 2024 | Beijing (Focus: Netherlands Market)</p>
+                                Spearheaded data-informed marketing and product initiatives that optimized user experience, boosted conversion, and delivered record sales performance.
+
+                                <ul class="list-disc pl-5 space-y-2 text-stone-700">
+                                    <li><b>Tripled Daily Order Volume (DOV)</b> and achieved record-high sales during peak promotions (Nov/Dec) by designing and executing localized promotional strategies based on Dutch consumer habits.</li>
+                                    <li>Designed end-to-end promotional rules and business logic, and collaborated with the development team to implement system functionality; coordinated with <b>Influencer teams (KOLs/KOCs)</b> to align promotions with audience preferences and drive trust.</li>
+                                    <li>Managed activity implementation and <b>App homepage/category redesign</b>, balancing Asian and European UI preferences to optimize traffic distribution and establish long-term platform cognition.</li>
+                                    <li>Executed <b>closed-loop optimization</b>: performed post-mortem data analysis, A/B testing, control group comparisons, and user research to refine promotional strategies and drive sustained growth in engagement, conversion, and retention.</li>
+                                </ul>
+
+
+
+                            </div>
+                        </div>
+                        <!-- Role 2 -->
+                        <div class="role-tab" data-role="specialist">
+                            <h3 class="text-xl font-bold p-4 cursor-pointer hover:bg-stone-50 border-t border-stone-100">Data Operations Specialist (JD Central)</h3>
+                            <div class="role-details hidden pl-8 pb-4 border-l-2 border-stone-200">
+                                <p class="text-sm font-medium text-stone-500 mb-2">Jan 2021 – Nov 2022 | Bangkok, Thailand</p>
+                                Drove rapid business growth and cross-platform expansion through data-driven operations, team leadership, and innovative e-commerce initiatives, establishing JD Thailand TikTok as a leading market player.
+                                <ul class="list-disc pl-5 space-y-2 text-stone-700">
+                                    <li>Fully responsible for end-to-end operations of <b>JD Thailand TikTok project</b> and <b>brand merchant agent operation</b>, covering product selection, quality control, process management, team management, data analysis, system support, and internal training, leading a <b>5-member team</b> to incubate innovative projects and achieve <b>revenue growth from zero to over one million</b>.</li>
+                                    <li>Built <b>JD Thailand TikTok e-commerce</b> from scratch: designed full business workflow, established product selection rules with purchasing and marketing teams, coordinated with warehouse, finance, customer service, R&D, TikTok platform, TSP, and MCN partners to build efficient cross-departmental and cross-platform operations.</li>
+                                    <li>Launched the first official <b>TikTok Thailand live broadcast account</b>, capturing early market opportunities; expanded <b>KOL/KOC promotion models</b>, incubated <b>top 3C category livestream hosts</b>, and achieved <b>sales increase of 92% YoY in September</b>, with <b>9.9 festival livestream sales ranking #1 across TikTok Thailand</b>.</li>
+                                    <li>Managed <b>cross-platform fan growth and engagement</b>: increased account followers by <b>2.5x</b> and attracted <b>over 10,000 new users</b> to JD Thailand platform through live broadcast and cross-platform promotions.</li>
+                                    <li>Led <b>merchant operation projects</b>: managed <b>20+ key accounts</b> on Thai e-commerce platforms, implemented cycle progress tracking and internal team training, achieved <b>KA merchant sales growth of 92% YoY</b> and <b>Q2 growth of 194%</b>, positioning the brand in the <b>top 20 of the same category on Shopee</b> and facilitating the <b>2023 JBP annual contract</b>.</li>
+                                    <li>Built <b>departmental data systems</b>: established business logic and reporting standards, created dashboards and monitoring reports for sales progress, merchant information, service income, and customer service KPIs, enabling <b>data-driven optimization</b> across operations.</li>
+                                </ul>
+
+
+                            </div>
+                        </div>
+                        <!-- Role 3 -->
+                        <div class="role-tab" data-role="analyst">
+                            <h3 class="text-xl font-bold p-4 cursor-pointer hover:bg-stone-50 border-t border-stone-100">Data Analyst (Life Services Group)</h3>
+                            <div class="role-details hidden pl-8 pb-4 border-l-2 border-stone-200">
+                                <p class="text-sm font-medium text-stone-500 mb-2">Jan 2018 – Dec 2020 | Beijing, China</p>
+                                Drove data-driven decision-making and business growth by building scalable data systems, optimizing analytics workflows, and translating insights into impactful operational strategies.
+                                <ul class="list-disc pl-5 space-y-2 text-stone-700">
+                                    <li>Built and maintained <b>data systems</b> supporting automotive, real estate, and marketing departments; developed <b>data models</b>, <b>ETL pipelines</b>, and <b>interactive dashboards</b> (EasyBI, JD.com internal tool) to automate reporting and improve decision-making efficiency for category performance, vehicle owner analysis, and personnel KPIs.</li>
+                                    <li>Conducted <b>business analysis</b> for the ToC automobile supplies line; optimized <b>coupon/subsidy strategies</b>, designed <b>vehicle lifecycle user projects</b>, and validated growth initiatives via <b>A/B testing</b>, driving user engagement and improved marketing effectiveness.</li>
+                                    <li>Processed and analyzed massive datasets (<b>100M+ rows</b>) using <b>Hive</b> and <b>Python</b> for ETL and preliminary analytics to support business insights and decision-making.</li>
+                                    <li>Led a key project analyzing and optimizing car maintenance users: conducted large-scale data analysis to validate user behavior patterns and system data accuracy, developed <b>user segmentation tags</b> to improve search and recommendation logic, and designed <b>A/B testing campaigns</b>, successfully reaching <b>7 million users via SMS</b> and generating <b>$50M in sales with ROI 141</b>.</li>
+                                    <li>Collaborated with <b>R&D teams</b> to define data requirements, database logic, and front-end display, ensuring accurate data presentation and enabling <b>data-driven business decisions</b>.</li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Skills Deep Dive Tab -->
+               <section id="skills-content" class="tab-content card">
+                    <h2 class="text-2xl font-bold mb-4">Skills Deep Dive</h2>
+                    <p class="text-stone-600 mb-6">
+                        This section connects my skills directly to my professional experience. Click a skill to see how it was applied.
+                    </p>
+                    <div class="flex flex-col md:flex-row md:space-x-6">
+                        <div class="md:w-1/3">
+                            <h4 class="text-lg font-semibold mb-3">Hard Skills</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="skill-button" data-skill="python">Python</button>
+                                <button class="skill-button" data-skill="sql">SQL (Hive, Presto)</button>
+                                <button class="skill-button" data-skill="etl">ETL & Data Modeling</button>
+                                <button class="skill-button" data-skill="easybi">Data Visualization</button>
+                                <button class="skill-button" data-skill="ab">A/B Testing</button>
+                                <button class="skill-button" data-skill="powerbi">Power BI</button>
+                                <button class="skill-button" data-skill="excle">Excel</button>
+                            </div>
+                            <h4 class="text-lg font-semibold mb-3 mt-6">Soft Skills</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="skill-button" data-skill="leadership">Team Leadership</button>
+                                <button class="skill-button" data-skill="pioneer">Pioneering & Initiative</button>
+                                <button class="skill-button" data-skill="cross-func">Cross-functional</button>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <div id="skill-context" class="p-4 bg-stone-50 rounded-lg min-h-[200px] border border-stone-200">
+                                <p class="text-stone-500">Select a skill to see its application.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Education Tab -->
+                <section id="education-content" class="tab-content card">
+                    <h2 class="text-2xl font-bold mb-4">Education</h2>
+                    <p class="text-stone-600 mb-6">
+                        My formal education, focusing on Data Science expertise and foundational engineering background.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">MSc Data Science - Utrecht University</h3>
+                    <p class="text-stone-500 mb-1">Sep 2024 – Present (Expected: Sep 2026)</p>
+                    <!-- <p class="text-stone-500 mb-4">Weighted Average Grade: <b>7.46 / 10</b></p> -->
+                    <ul class="list-disc pl-5 space-y-1 text-stone-700 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-y-1">
+                        <li>Data Intensive Systems</li>
+                        <li>Data Mining</li>
+                        <li>Knowledge & Data Engineering</li>
+                        <li>Scientific Methods in Data Science</li>
+                        <li>Advanced Machine Learning</li>
+                        <li>Data Visualization</li>
+                        <li>Process Mining</li>
+                        <li>Human-Centered Machine Learning</li>
+                        <li>Cloud and Edge Computing</li>
+                        <li>Multimedia Retrieval </li>
+                    </ul>
+                    <!-- <div class="chart-container mb-8">
+                        <canvas id="mscChart"></canvas>
+                    </div> -->
+
+                    <h3 class="text-xl font-semibold mb-2">BSc Software Engineering - Heilongjiang University</h3>
+                    <p class="text-stone-500 mb-4">Sep 2014 – Jun 2018</p>
+                    <h4 class="text-md font-semibold mb-2 text-stone-600">Key Foundational Courses:</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-stone-700">
+                        <li>The Foundation of Program Design</li>
+                        <li>Data Structure and Algorithm</li>
+                        <li>Computer Composition Principle</li>
+                        <li>Principles of Database System</li>
+                        <li>C++ Program Design Language</li>
+                        <li>Introduction to Software Engineering</li>
+                        <li>Probability Theory and Mathematical Statistics</li>
+                        <li>Linear Algebra</li>
+                        <li>VC++ Program Design</li>
+                        <li>.NET Programming</li>
+                        <li>JAVA Programming</li>
+                        <li>Software Structure</li>
+                        <li>Software System Analysis and Design</li>
+                        <li>Multimedia Technology</li>
+                        <li>Software Engineering Methods for Human-Computer Interaction</li>
+                        <li>E-commerce</li>
+                    </ul>
+
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Data Storage ---
+
+            const skillData = {
+                'python': 'Used for data cleaning, ETL processes (converting non-structural JSON to tabular formats), and preliminary analysis/visualization. (Role: Business Analyst)',
+                'sql': 'Processed and analyzed massive datasets (100M+ rows) using Hive to derive business insights for user campaigns. (Role: Business Analyst)',
+                'etl': 'Experience in transforming data types, setting up financial data rules, and managing data governance by establishing an owner life cycle model. (Role: Business Analyst)',
+                'easybi': 'Developed and maintained interactive data dashboards using EasyBI (JD.com internal development tool, Presto-based) for performance monitoring, track business metrics, and support efficient cross-departmental decision-making. (Role: Business Analyst)',
+                'ab': 'Validated user growth strategies via A/B testing, leading to campaign optimization that generated 50 million in sales (ROI 141). (Role: Business Analyst)',
+                'powerbi': 'Used occasionally for specialized, complex financial reporting (e.g., P&L statements) requiring multiple data source linking to support the finance department. (Role: Business Analyst)',
+                'leadership': 'Led a 5-member team to incubate and expand the JD Thailand TikTok project and brand business agent operation, achieving a breakthrough from zero to millions. (Role: Data Operations Specialist)',
+                'pioneer': 'Pioneered the complete promotional and operational framework for JD Netherlands from scratch. Also launched JD Thailand\'s TikTok e-commerce business from zero. (Roles: Growth Manager & Ops Specialist)',
+                'cross-func': 'Collaborated directly with R&D teams to define data requirements, and with Procurement and Marketing to provide customized reports to improve decision-making efficiency. (Role: Business Analyst)',
+                'excle':'Advanced proficiency in data analysis and visualization, including complex formulas (e.g. SUMIFS, INDEX/MATCH, nested functions), Pivot Tables, and conditional formatting; used for creating insightful reports, dashboards, and ad-hoc analyses to support business decision-making.'
+
+            };
+
+            const mscGradeData = {
+                labels: ['Data Intensive Systems', 'Data Mining', 'Knowledge & Data Eng.', 'Scientific Methods', 'Advanced ML', 'Data Visualization', 'Process Mining', 'Human-Centered ML'],
+                grades: [6.0, 8.7, 8.0, 7.8, 7.0, 7.9, 7.4, 6.9]
+            };
+
+            // --- Main Tab Navigation ---
+
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-tab');
+
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${targetId}-content`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // --- Career Journey Accordion ---
+
+            const roleTabs = document.querySelectorAll('.role-tab h3');
+            roleTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const details = tab.nextElementSibling;
+                    details.classList.toggle('hidden');
+                });
+            });
+
+            // --- Skills Deep Dive ---
+
+            const skillButtons = document.querySelectorAll('.skill-button');
+            const skillContext = document.getElementById('skill-context');
+
+            skillButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const skillKey = button.getAttribute('data-skill');
+                    
+                    skillButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    if (skillData[skillKey]) {
+                        skillContext.innerHTML = `<p class="text-stone-800">${skillData[skillKey]}</p>`;
+                    }
+                });
+            });
+            
+            // --- Education Chart.js ---
+            
+            // const ctx = document.getElementById('mscChart').getContext('2d');
+            // const mscChart = new Chart(ctx, {
+            //     type: 'bar',
+            //     data: {
+            //         labels: mscGradeData.labels,
+            //         datasets: [{
+            //             label: 'Grade (out of 10)',
+            //             data: mscGradeData.grades,
+            //             backgroundColor: 'rgba(13, 148, 136, 0.6)', /* teal-600 with opacity */
+            //             borderColor: 'rgba(13, 148, 136, 1)',
+            //             borderWidth: 1,
+            //             borderRadius: 4
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         maintainAspectRatio: false,
+            //         scales: {
+            //             y: {
+            //                 beginAtZero: true,
+            //                 max: 10
+            //             },
+            //             x: {
+            //                 ticks: {
+            //                     callback: function(value) {
+            //                         const label = this.getLabelForValue(value);
+            //                         return label.length > 16 ? label.substring(0, 16) + '...' : label;
+            //                     }
+            //                 }
+            //             }
+            //         },
+            //         plugins: {
+            //             legend: {
+            //                 display: false
+            //             },
+            //             tooltip: {
+            //                 callbacks: {
+            //                     label: function(context) {
+            //                         return `${context.dataset.label}: ${context.formattedValue}`;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // });
+
+        });
+    </script>
+</body>
+</html>
